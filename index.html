@@ -272,7 +272,15 @@ const CONFIG = {
   refreshWeatherMin: 15,
   refreshJokeMin: 360,
   refreshNewsMin: 20,
+  refreshPhotosMin: 30,   // re-check Drive folder every 30 min
 
+  // Google Drive photo source (folder must be "Anyone with the link: Viewer")
+  drive: {
+    folderId: "1tfZpLN7fFx8Aq5rhhDja1CUhoQX8Rbjo",
+    apiKey:   "AIzaSyBR3-GospAz6ZEdC7turS5bBos_DVbbp-o"
+  },
+
+  // Fallback photos shown if Drive is empty or unreachable
   photos: [
     "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920",
     "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1920",
@@ -307,23 +315,58 @@ function updateClock() {
 setInterval(updateClock, 1000); updateClock();
 
 /* ---------------- Slideshow ---------------- */
-(function initSlideshow() {
+let _slideTimer = null;
+let _slideIdx = 0;
+
+function renderSlides(urls) {
   const host = document.getElementById("slideshow");
-  if (!CONFIG.photos.length) return;
-  CONFIG.photos.forEach((src, i) => {
+  if (!urls.length) return;
+  // preserve the "Garage Gallery" tag element
+  const tag = host.querySelector(".vignette-tag");
+  host.querySelectorAll(".slide").forEach(n => n.remove());
+  urls.forEach((src, i) => {
     const d = document.createElement("div");
     d.className = "slide" + (i === 0 ? " active" : "");
     d.style.backgroundImage = `url("${src}")`;
-    host.appendChild(d);
+    host.insertBefore(d, tag);
   });
-  let idx = 0;
+  _slideIdx = 0;
+  if (_slideTimer) clearInterval(_slideTimer);
   const slides = host.querySelectorAll(".slide");
-  setInterval(() => {
-    slides[idx].classList.remove("active");
-    idx = (idx + 1) % slides.length;
-    slides[idx].classList.add("active");
+  if (slides.length <= 1) return;
+  _slideTimer = setInterval(() => {
+    slides[_slideIdx].classList.remove("active");
+    _slideIdx = (_slideIdx + 1) % slides.length;
+    slides[_slideIdx].classList.add("active");
   }, CONFIG.slideInterval);
-})();
+}
+
+async function loadDrivePhotos() {
+  const { folderId, apiKey } = CONFIG.drive || {};
+  if (!folderId || !apiKey) return null;
+  try {
+    const q = encodeURIComponent(`'${folderId}' in parents and mimeType contains 'image/' and trashed=false`);
+    const url = `https://www.googleapis.com/drive/v3/files?q=${q}&key=${apiKey}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc&pageSize=100`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error("Drive API " + r.status);
+    const d = await r.json();
+    if (!d.files || !d.files.length) return [];
+    // Shuffle so slideshow order varies
+    const files = d.files.slice().sort(() => Math.random() - 0.5);
+    return files.map(f => `https://drive.google.com/thumbnail?id=${f.id}&sz=w1920`);
+  } catch (e) {
+    console.warn("Drive photo load failed, using fallback:", e);
+    return null;
+  }
+}
+
+async function refreshPhotos() {
+  const drive = await loadDrivePhotos();
+  const urls = (drive && drive.length) ? drive : CONFIG.photos;
+  renderSlides(urls);
+}
+refreshPhotos();
+setInterval(refreshPhotos, CONFIG.refreshPhotosMin * 60 * 1000);
 
 /* ---------------- Weather ---------------- */
 const WX_CODE = {
