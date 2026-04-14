@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Geha Garage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700;800&family=Racing+Sans+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a18;
+    --panel: rgba(14, 26, 54, 0.72);
+    --panel-2: rgba(22, 40, 78, 0.55);
+    --border: rgba(120, 180, 255, 0.14);
+    --text: #eaf2ff;
+    --muted: #8aa3c7;
+    --accent: #4ea8ff;   /* electric blue */
+    --accent2: #00e5ff;  /* cyan */
+    --accent3: #8b5cf6;  /* indigo/violet pop */
+    --ticker-bg: rgba(3, 10, 28, 0.92);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; color: var(--text);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+  }
+  body { display: flex; flex-direction: column; }
+
+  /* Animated mesh background peeking behind panels */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -2;
+    background:
+      radial-gradient(1200px 800px at 10% 10%, rgba(78,168,255,0.22), transparent 60%),
+      radial-gradient(1000px 700px at 90% 20%, rgba(0,229,255,0.15), transparent 60%),
+      radial-gradient(1000px 900px at 50% 100%, rgba(139,92,246,0.18), transparent 65%),
+      linear-gradient(180deg, #030714, #0a1230);
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  @keyframes drift {
+    0%   { filter: hue-rotate(0deg) saturate(1); transform: scale(1); }
+    100% { filter: hue-rotate(12deg) saturate(1.2); transform: scale(1.05); }
+  }
+
+  /* Checkered flag strip at top */
+  .flag-strip { height: 8px; width: 100%; flex-shrink: 0;
+    background: repeating-linear-gradient(90deg, #fff 0 18px, #111 18px 36px);
+    opacity: 0.85;
+  }
+
+  .app { display: grid;
+    grid-template-columns: 1fr 440px;
+    grid-template-rows: auto 1fr auto;
+    flex: 1; min-height: 0; width: 100vw; gap: 12px; padding: 12px; padding-bottom: 0;
+  }
+
+  /* ---------- HEADER ---------- */
+  header.hero {
+    grid-column: 1 / -1; grid-row: 1;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 2px 16px 6px; position: relative; min-height: 0;
+  }
+  .brand {
+    display: flex; align-items: baseline; gap: 14px;
+    font-family: "Racing Sans One", "Bebas Neue", sans-serif;
+    font-size: 44px; letter-spacing: 1px; line-height: 1;
+    background: linear-gradient(92deg, #9fd4ff 0%, #4ea8ff 28%, #00e5ff 58%, #4ea8ff 88%, #9fd4ff 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shine 6s linear infinite;
+    text-shadow: 0 0 32px rgba(78,168,255,0.35);
+    position: relative;
+  }
+  .brand > span:first-child { -webkit-text-fill-color: var(--muted); color: var(--muted); font-size: 18px; letter-spacing: 4px; text-transform: uppercase; font-weight: 700; font-family: "Inter", sans-serif; }
+  @keyframes shine { to { background-position: 200% 0; } }
+
+  .brand .spark { width: 14px; height: 14px; border-radius: 50%;
+    background: #00e5ff; box-shadow: 0 0 14px #00e5ff, 0 0 28px #4ea8ff;
+    animation: pulse 1.6s ease-in-out infinite;
+    display: inline-block; margin-right: 10px; vertical-align: middle;
+  }
+  @keyframes pulse { 0%,100%{ opacity:1; transform: scale(1);} 50%{opacity:0.4; transform: scale(0.7);} }
+
+  .hero-right { text-align: right; font-family: "Bebas Neue", sans-serif; }
+  .hero-right .big { font-size: 44px; line-height: 1; letter-spacing: 2px; color: var(--text); }
+  .hero-right .sub { font-size: 16px; color: var(--muted); letter-spacing: 3px; margin-top: 4px; }
+
+  /* ---------- SLIDESHOW ---------- */
+  #slideshow { position: relative; border-radius: 18px; overflow: hidden;
+    border: 1px solid var(--border); background: #000; grid-row: 2; grid-column: 1;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  #slideshow .slide { position: absolute; inset: 0; background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 1.8s ease-in-out; transform: scale(1.05);
+  }
+  #slideshow .slide.active { opacity: 1; animation: kenburns 10s ease-out forwards; }
+  @keyframes kenburns {
+    from { transform: scale(1.05) translate(0, 0); }
+    to   { transform: scale(1.15) translate(-1%, -1%); }
+  }
+  #slideshow::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.45) 100%);
+  }
+  .vignette-tag { position: absolute; top: 18px; left: 18px; z-index: 2;
+    padding: 6px 12px; font-family: "Bebas Neue", sans-serif; font-size: 14px; letter-spacing: 3px;
+    background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px;
+    color: var(--accent); text-transform: uppercase;
+    backdrop-filter: blur(6px);
+  }
+  .vignette-tag .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); margin-right: 8px; box-shadow: 0 0 10px var(--accent); animation: pulse 2s infinite; }
+
+  /* ---------- SIDE PANELS ---------- */
+  .side { grid-row: 2; grid-column: 2; display: grid; grid-template-rows: auto 1fr; gap: 10px; min-height: 0; }
+
+  .panel {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--border); border-radius: 18px;
+    padding: 16px 20px; backdrop-filter: blur(10px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    overflow: hidden;
+  }
+  .panel::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3), var(--accent));
+    background-size: 300% 100%;
+    animation: shine 8s linear infinite;
+  }
+  .panel h3 { font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--accent); font-weight: 800; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel h3::before { content: ""; width: 18px; height: 2px; background: var(--accent); display: inline-block; }
+
+  /* Clock */
+  #clock .time { font-family: "Bebas Neue", sans-serif; font-size: 72px; font-weight: 400;
+    letter-spacing: 3px; line-height: 1;
+    background: linear-gradient(180deg, #fff, #c9d1dc); -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 0 30px rgba(255,255,255,0.08);
+  }
+  #clock .date { color: var(--muted); font-size: 16px; margin-top: 6px; letter-spacing: 1.5px; text-transform: uppercase; }
+
+  /* Weather */
+  #weather .wx-top { display: flex; align-items: center; justify-content: space-between; }
+  #weather .wx-temp { font-family: "Bebas Neue", sans-serif; font-size: 64px; font-weight: 400; line-height: 1; letter-spacing: 2px;
+    background: linear-gradient(180deg, #9fd4ff, #4ea8ff); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  #weather .wx-icon { font-size: 54px; filter: drop-shadow(0 6px 18px rgba(78,168,255,0.45)); animation: bob 4s ease-in-out infinite; }
+  @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-6px);} }
+  #weather .wx-desc { color: var(--text); margin-top: 4px; font-size: 18px; font-weight: 500; }
+  #weather .wx-meta { display: flex; gap: 16px; margin-top: 12px; color: var(--muted); font-size: 13px; flex-wrap: wrap; letter-spacing: 0.5px; }
+  #weather .wx-meta span::before { content: "●"; color: var(--accent); margin-right: 6px; font-size: 8px; vertical-align: middle; }
+  #weather .wx-forecast { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; }
+  #weather .wx-day { text-align: center; padding: 8px 4px;
+    background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 12px; font-size: 13px; transition: transform 0.3s; }
+  #weather .wx-day:hover { transform: translateY(-3px); }
+  #weather .wx-day .d { color: var(--muted); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; }
+  #weather .wx-day .hi { font-weight: 800; font-size: 20px; margin-top: 4px; color: var(--accent); }
+  #weather .wx-day .lo { color: var(--muted); font-size: 13px; }
+  #weather .wx-day .ic { font-size: 26px; margin: 4px 0; }
+
+  /* Joke */
+  #joke { background: linear-gradient(135deg, rgba(0,229,255,0.16), rgba(139,92,246,0.14)); }
+  #joke h3 { color: var(--accent2); }
+  #joke h3::before { background: var(--accent2); }
+  #joke .joke-text { font-size: 22px; line-height: 1.4; font-weight: 500; }
+  #joke .joke-quote { font-family: "Bebas Neue", sans-serif; font-size: 72px; line-height: 0.6;
+    color: var(--accent2); opacity: 0.6; display: inline-block; vertical-align: -18px; margin-right: 6px; }
+
+  /* Ticker */
+  #ticker { grid-column: 1 / -1; grid-row: 3; background: var(--ticker-bg);
+    border-top: 2px solid var(--accent); overflow: hidden; white-space: nowrap;
+    padding: 14px 0; font-size: 22px; position: relative;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+  }
+  #ticker::before {
+    content: "LIVE"; position: absolute; left: 0; top: 0; bottom: 0;
+    display: flex; align-items: center; padding: 0 18px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    color: #03122c; font-family: "Bebas Neue", sans-serif; font-size: 20px; letter-spacing: 3px;
+    z-index: 2; font-weight: 700;
+  }
+  #ticker::after {
+    content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 80px;
+    background: linear-gradient(90deg, transparent, var(--ticker-bg));
+    pointer-events: none; z-index: 2;
+  }
+  #ticker .track-wrap { padding-left: 88px; }
+  #ticker .track { display: inline-block; padding-left: 100%;
+    animation: scroll 360s linear infinite; }
+  #ticker .item { display: inline-block; padding: 0 36px; }
+  #ticker .item .tag { color: var(--accent2); font-weight: 800; margin-right: 10px;
+    text-transform: uppercase; font-size: 13px; letter-spacing: 2px;
+    background: rgba(0,229,255,0.12); padding: 3px 9px; border-radius: 6px;
+    border: 1px solid rgba(0,229,255,0.28);
+  }
+  #ticker .sep { color: var(--accent); margin: 0 8px; }
+  @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+
+  @media (max-width: 1100px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto auto; }
+    .side { grid-column: 1; grid-row: 3; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
+    #ticker { grid-row: 4; }
+    .brand { font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="flag-strip"></div>
+
+<div class="app">
+
+  <header class="hero">
+    <div class="brand">
+      <span><span class="spark"></span>Welcome to the</span>
+      <span>GEHA GARAGE</span>
+    </div>
+    <div class="hero-right">
+      <div class="big" id="hero-time">--:--</div>
+      <div class="sub" id="hero-date">LOADING</div>
+    </div>
+  </header>
+
+  <div id="slideshow">
+    <div class="vignette-tag"><span class="dot"></span>Garage Gallery</div>
+  </div>
+
+  <div class="side">
+    <div class="panel" id="weather">
+      <h3>Weather</h3>
+      <div class="wx-top">
+        <div>
+          <div class="wx-temp" id="wx-temp">--°</div>
+          <div class="wx-desc" id="wx-desc">Loading weather…</div>
+        </div>
+        <div class="wx-icon" id="wx-icon">⛅</div>
+      </div>
+      <div class="wx-meta">
+        <span id="wx-hilo">H -- · L --</span>
+        <span id="wx-wind">Wind --</span>
+        <span id="wx-loc">Overland Park, KS</span>
+      </div>
+      <div class="wx-forecast" id="wx-forecast"></div>
+    </div>
+
+    <div class="panel" id="joke">
+      <h3>Dad Joke of the Day</h3>
+      <div class="joke-text"><span class="joke-quote">"</span><span id="joke-text">Loading…</span></div>
+    </div>
+  </div>
+
+  <div id="ticker">
+    <div class="track-wrap"><div class="track" id="ticker-track">Loading headlines…</div></div>
+  </div>
+</div>
+
+<script>
+/* =======================================================
+   CONFIG — edit these to customize
+   ======================================================= */
+const CONFIG = {
+  lat: 38.8567,
+  lon: -94.6669,
+  locationName: "Overland Park, KS",
+  tempUnit: "fahrenheit",
+  windUnit: "mph",
+  slideInterval: 8000,
+  refreshWeatherMin: 15,
+  refreshJokeMin: 360,
+  refreshNewsMin: 20,
+
+  photos: [
+    "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1920",
+    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1920",
+    "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=1920",
+    "https://images.unsplash.com/photo-1544829099-b9a0c07fad1a?w=1920",
+    "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=1920"
+  ],
+
+  feeds: [
+    { tag: "Top",    url: "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en" },
+    { tag: "KC",     url: "https://news.google.com/rss/search?q=Kansas+City+when:1d&hl=en-US&gl=US&ceid=US:en" },
+    { tag: "Chiefs", url: "https://news.google.com/rss/search?q=Kansas+City+Chiefs&hl=en-US&gl=US&ceid=US:en" },
+    { tag: "Royals", url: "https://news.google.com/rss/search?q=Kansas+City+Royals&hl=en-US&gl=US&ceid=US:en" },
+    { tag: "Sports", url: "https://news.google.com/rss/headlines/section/topic/SPORTS?hl=en-US&gl=US&ceid=US:en" }
+  ]
+};
+
+/* ---------------- Clock ---------------- */
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours();
+  const m = String(now.getMinutes()).padStart(2, "0");
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = ((h + 11) % 12) + 1;
+  const timeStr = `${h12}:${m} ${ampm}`;
+  const dateStr = now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  const ct = document.getElementById("clock-time"); if (ct) ct.textContent = timeStr;
+  const cd = document.getElementById("clock-date"); if (cd) cd.textContent = dateStr;
+  document.getElementById("hero-time").textContent = timeStr;
+  document.getElementById("hero-date").textContent = now.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" }).toUpperCase();
+}
+setInterval(updateClock, 1000); updateClock();
+
+/* ---------------- Slideshow ---------------- */
+(function initSlideshow() {
+  const host = document.getElementById("slideshow");
+  if (!CONFIG.photos.length) return;
+  CONFIG.photos.forEach((src, i) => {
+    const d = document.createElement("div");
+    d.className = "slide" + (i === 0 ? " active" : "");
+    d.style.backgroundImage = `url("${src}")`;
+    host.appendChild(d);
+  });
+  let idx = 0;
+  const slides = host.querySelectorAll(".slide");
+  setInterval(() => {
+    slides[idx].classList.remove("active");
+    idx = (idx + 1) % slides.length;
+    slides[idx].classList.add("active");
+  }, CONFIG.slideInterval);
+})();
+
+/* ---------------- Weather ---------------- */
+const WX_CODE = {
+  0:["☀️","Clear Skies"],1:["🌤️","Mainly Clear"],2:["⛅","Partly Cloudy"],3:["☁️","Overcast"],
+  45:["🌫️","Foggy"],48:["🌫️","Rime Fog"],
+  51:["🌦️","Light Drizzle"],53:["🌦️","Drizzle"],55:["🌦️","Heavy Drizzle"],
+  61:["🌧️","Light Rain"],63:["🌧️","Rain"],65:["🌧️","Heavy Rain"],
+  66:["🌧️","Freezing Rain"],67:["🌧️","Freezing Rain"],
+  71:["🌨️","Light Snow"],73:["🌨️","Snow"],75:["🌨️","Heavy Snow"],77:["🌨️","Snow Grains"],
+  80:["🌦️","Showers"],81:["🌦️","Showers"],82:["⛈️","Violent Showers"],
+  85:["🌨️","Snow Showers"],86:["🌨️","Snow Showers"],
+  95:["⛈️","Thunderstorm"],96:["⛈️","Thunderstorm w/ Hail"],99:["⛈️","Severe Storm"]
+};
+async function loadWeather() {
+  try {
+    const u = new URL("https://api.open-meteo.com/v1/forecast");
+    u.searchParams.set("latitude", CONFIG.lat);
+    u.searchParams.set("longitude", CONFIG.lon);
+    u.searchParams.set("current", "temperature_2m,weather_code,wind_speed_10m");
+    u.searchParams.set("daily", "weather_code,temperature_2m_max,temperature_2m_min");
+    u.searchParams.set("temperature_unit", CONFIG.tempUnit);
+    u.searchParams.set("wind_speed_unit", CONFIG.windUnit);
+    u.searchParams.set("timezone", "auto");
+    u.searchParams.set("forecast_days", "5");
+    const r = await fetch(u); const d = await r.json();
+    const [icon, desc] = WX_CODE[d.current.weather_code] || ["⛅","—"];
+    document.getElementById("wx-temp").textContent = Math.round(d.current.temperature_2m) + "°";
+    document.getElementById("wx-desc").textContent = desc;
+    document.getElementById("wx-icon").textContent = icon;
+    document.getElementById("wx-hilo").textContent =
+      `H ${Math.round(d.daily.temperature_2m_max[0])}° · L ${Math.round(d.daily.temperature_2m_min[0])}°`;
+    document.getElementById("wx-wind").textContent =
+      `Wind ${Math.round(d.current.wind_speed_10m)} ${CONFIG.windUnit}`;
+    document.getElementById("wx-loc").textContent = CONFIG.locationName;
+
+    const fc = document.getElementById("wx-forecast"); fc.innerHTML = "";
+    for (let i = 1; i < Math.min(5, d.daily.time.length); i++) {
+      const day = new Date(d.daily.time[i] + "T12:00:00")
+        .toLocaleDateString(undefined, { weekday: "short" });
+      const [ic] = WX_CODE[d.daily.weather_code[i]] || ["⛅"];
+      const el = document.createElement("div");
+      el.className = "wx-day";
+      el.innerHTML = `<div class="d">${day}</div><div class="ic">${ic}</div>
+        <div class="hi">${Math.round(d.daily.temperature_2m_max[i])}°</div>
+        <div class="lo">${Math.round(d.daily.temperature_2m_min[i])}°</div>`;
+      fc.appendChild(el);
+    }
+  } catch (e) {
+    document.getElementById("wx-desc").textContent = "Weather unavailable";
+    console.error(e);
+  }
+}
+loadWeather();
+setInterval(loadWeather, CONFIG.refreshWeatherMin * 60 * 1000);
+
+/* ---------------- Joke ---------------- */
+async function loadJoke() {
+  try {
+    const r = await fetch("https://icanhazdadjoke.com/", { headers: { "Accept": "application/json" } });
+    const d = await r.json();
+    document.getElementById("joke-text").textContent = d.joke;
+  } catch {
+    document.getElementById("joke-text").textContent = "Why don't scientists trust atoms? Because they make up everything.";
+  }
+}
+loadJoke();
+setInterval(loadJoke, CONFIG.refreshJokeMin * 60 * 1000);
+
+/* ---------------- News Ticker ---------------- */
+async function fetchFeed(feed) {
+  const u = "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(feed.url);
+  try {
+    const r = await fetch(u); const d = await r.json();
+    if (!d.items) return [];
+    return d.items.slice(0, 8).map(i => ({ tag: feed.tag, title: i.title.replace(/\s+-\s+[^-]+$/, "") }));
+  } catch { return []; }
+}
+async function loadNews() {
+  const all = (await Promise.all(CONFIG.feeds.map(fetchFeed))).flat();
+  const byTag = {}; all.forEach(it => (byTag[it.tag] = byTag[it.tag] || []).push(it));
+  const mixed = []; let more = true;
+  while (more) { more = false;
+    for (const t of Object.keys(byTag)) {
+      if (byTag[t].length) { mixed.push(byTag[t].shift()); more = true; }
+    }
+  }
+  const html = mixed.length
+    ? mixed.map(x => `<span class="item"><span class="tag">${x.tag}</span>${escape(x.title)}</span><span class="sep">•</span>`).join("")
+    : `<span class="item">Headlines unavailable — check connection</span>`;
+  document.getElementById("ticker-track").innerHTML = html + html;
+}
+function escape(s){return s.replace(/[&<>"]/g,c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));}
+loadNews();
+setInterval(loadNews, CONFIG.refreshNewsMin * 60 * 1000);
+</script>
+</body>
+</html>
