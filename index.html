@@ -206,6 +206,48 @@
   #ticker .sep { color: var(--accent); margin: 0 8px; }
   @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-100%); } }
 
+  /* Scale up for large TV screens (Raspberry Pi + HDMI) */
+  @media (min-width: 1600px) {
+    .app { grid-template-columns: 1fr 32%; gap: 18px; padding: 18px; padding-bottom: 0; }
+    .brand { font-size: 64px; }
+    .brand > span:first-child { font-size: 22px; letter-spacing: 5px; }
+    .hero-right .big { font-size: 64px; }
+    .hero-right .sub { font-size: 20px; letter-spacing: 4px; }
+    .panel { padding: 22px 28px; }
+    .panel h3 { font-size: 15px; letter-spacing: 4px; margin-bottom: 16px; }
+    #weather .wx-temp { font-size: 96px; }
+    #weather .wx-icon { font-size: 80px; }
+    #weather .wx-desc { font-size: 26px; }
+    #weather .wx-meta { font-size: 17px; gap: 22px; margin-top: 14px; }
+    #weather .wx-day { padding: 12px 6px; }
+    #weather .wx-day .d { font-size: 14px; }
+    #weather .wx-day .ic { font-size: 36px; }
+    #weather .wx-day .hi { font-size: 30px; }
+    #weather .wx-day .lo { font-size: 18px; }
+    #joke .joke-text { font-size: 34px; line-height: 1.35; }
+    #joke .joke-quote { font-size: 100px; vertical-align: -26px; }
+    #ticker { font-size: 30px; padding: 20px 0; }
+    #ticker::before { font-size: 28px; padding: 0 24px; }
+    #ticker .track-wrap { padding-left: 120px; }
+    #ticker .item .tag { font-size: 17px; padding: 4px 11px; }
+    .vignette-tag { font-size: 18px; padding: 8px 16px; }
+  }
+
+  /* Extra scale for 4K TVs */
+  @media (min-width: 2400px) {
+    .brand { font-size: 88px; }
+    .hero-right .big { font-size: 88px; }
+    #weather .wx-temp { font-size: 128px; }
+    #weather .wx-icon { font-size: 108px; }
+    #weather .wx-desc { font-size: 34px; }
+    #weather .wx-meta { font-size: 22px; }
+    #weather .wx-day .hi { font-size: 40px; }
+    #weather .wx-day .ic { font-size: 48px; }
+    #joke .joke-text { font-size: 46px; }
+    #ticker { font-size: 42px; }
+    #ticker .item .tag { font-size: 22px; }
+  }
+
   @media (max-width: 1100px) {
     .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto auto; }
     .side { grid-column: 1; grid-row: 3; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; }
